@@ -1,3 +1,8 @@
+/*
+q:
+    1: l, r, v do a[i] = v, l <= i < r
+    2: i print a[i] value
+*/
 #include <bits/stdc++.h>
 
 using namespace std;
