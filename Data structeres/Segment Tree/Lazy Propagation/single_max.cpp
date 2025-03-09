@@ -1,3 +1,9 @@
+/*
+    q:
+    1: l r v do max(a[i], v), for all i >= l && i < r
+    2: i print value at a[i]
+*/
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -25,10 +31,11 @@ const int iinf = 2e9;
 const int N = 1e5;
 const ll MOD = 1e9 + 7;
 
-class SegmentTree{
+class SegmentTree
+{
 private:
     int n;
-    vector<ll> t, l;
+    vector<int> t, l;
     void build(int v, int tl, int tr, const vector<int>& a){
         if (tl == tr){
             t[v] = a[tl];
@@ -37,38 +44,38 @@ private:
         int tm = tl + tr >> 1;
         build(2 * v + 1, tl, tm, a);
         build(2 * v + 2, tm + 1, tr, a);
-        t[v] = t[2 * v + 1] + t[2 * v + 2];
+        t[v] = max(t[2 * v + 1], t[2 * v + 2]);
     }
-    void push(int v, int tl, int tm, int tr){
+    void push(int v){
         if (l[v] != 0){
-            l[2 * v + 1] += l[v];
-            l[2 * v + 2] += l[v];
-            t[2 * v + 1] += l[v] * (tm - tl + 1);
-            t[2 * v + 2] += l[v] * (tr - tm);
+            l[2 * v + 1] = max(l[2 * v + 1], l[v]);
+            l[2 * v + 2] = max(l[2 * v + 2], l[v]);
+            t[2 * v + 1] = max(t[2 * v + 1], l[2 * v + 1]);
+            t[2 * v + 2] = max(t[2 * v + 2], l[2 * v + 2]);
             l[v] = 0;
         }
     }
     void upd(int v, int tl, int tr, int ql, int qr, int d){
-        if (ql > tr || qr < tl)
+        if (ql > tr || tl > qr)
             return;
         if (ql <= tl && tr <= qr){
-            l[v] += d;
-            t[v] += (tr - tl + 1) * d;
+            l[v] = max(l[v], d);
+            t[v] = max(t[v], d);
             return;
         }
         int tm = tl + tr >> 1;
         upd(2 * v + 1, tl, tm, ql, qr, d);
         upd(2 * v + 2, tm + 1, tr, ql, qr, d);
-        t[v] = t[2 * v + 1] + t[2 * v + 2];
+        t[v] = max(t[2 * v + 1], t[2 * v + 2]);
     }
-    ll get(int v, int tl, int tr, int ql, int qr){
-        if (ql > tr || qr < tl)
-            return 0ll;
-        if (ql <= tl && tr <= qr)
+    int get(int v, int tl, int tr, int i){
+        if (tl > i || tr < i)
+            return -iinf;
+        if (tl == tr)
             return t[v];
+        push(v);
         int tm = tl + tr >> 1;
-        push(v, tl, tm, tr);
-        return get(2 * v + 1, tl, tm, ql, qr) + get(2 * v + 2, tm + 1, tr, ql, qr);
+        return max(get(2 * v + 1, tl, tm, i), get(2 * v + 2, tm + 1, tr, i));
     }
 public:
     SegmentTree(const int size, const vector<int>& a){
@@ -80,8 +87,8 @@ public:
     void upd(int ql, int qr, int d){
         upd(0, 0, n - 1, ql, qr, d);
     }
-    ll get(int ql, int qr){
-        return get(0, 0, n - 1, ql, qr);
+    int get(int i){
+        return get(0, 0, n - 1, i);
     }
 };
 
@@ -100,7 +107,7 @@ void solution(){
         } else{
             int i;
             cin >> i;
-            cout << sgt.get(i, i) << '\n';
+            cout << sgt.get(i) << '\n';
         }
     }
 }
